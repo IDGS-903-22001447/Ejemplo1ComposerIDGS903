@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,12 @@ import androidx. compose. foundation. lazy. items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
+import androidx.compose.ui.platform.LocalContext
 
 
 private val tarjeta: List<PersonajeTarjeta> = listOf(
@@ -41,7 +48,7 @@ private val tarjeta: List<PersonajeTarjeta> = listOf(
     PersonajeTarjeta("Tenshinhan", "Maestro de las artes marciales y miembro de los Z Fighters."),
     PersonajeTarjeta("Cell", "Cell conocido como Célula en España, es un bioandroide creado por la computadora del Dr. Gero, quien vino del futuro de la línea 3 con la intención de vengarse de Goku por haber acabado con el Ejército del Listón Rojo, y con ello el sueño de todo villano: dominar el mundo. "),
     PersonajeTarjeta("Milk", "Esposa de Goku y madre de Gohan. "),
-    PersonajeTarjeta("Majin Buu", "También conocido como Boo original, es la forma original y pura de Majin-Boo, y la última forma de Boo que aparece en Dragon Ball Z")
+    PersonajeTarjeta("Majin", "También conocido como Boo original, es la forma original y pura de Majin-Boo, y la última forma de Boo que aparece en Dragon Ball Z")
 
 )
 
@@ -65,10 +72,14 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun ImagenHero(){
+fun ImagenHero(imageName: String){
+    val context = LocalContext.current
+    val imageResId = remember (imageName){
+        context.resources.getIdentifier(imageName.lowercase(),"drawable",context.packageName)
+    }
     Image(
-        painter = painterResource(R.drawable.img),
-        contentDescription = "Gohan",
+        painter = painterResource(id = imageResId),
+        contentDescription = null,
         modifier = Modifier
             .padding(16.dp)
             .size(100.dp)
@@ -78,7 +89,6 @@ fun ImagenHero(){
 
     )
 }
-
 @Composable
 fun Image() {
     TODO("Not yet implemented")
@@ -106,29 +116,38 @@ fun MyPersonajes(personaje: PersonajeTarjeta){
 
     }
     Row(modifier = Modifier.padding(8.dp).background(MaterialTheme.colorScheme.background)) {
-        ImagenHero()
+        ImagenHero(personaje.title)
         Personajes(personaje)
     }
 }
 
 @Composable
-fun Personaje(name:String, color:Color, style: TextStyle){
-    Text(text = name)
+fun Personaje(name:String, color:Color, style: TextStyle, lines: Int = Int.MAX_VALUE){
+    Text(text = name, color=color , style = style, maxLines = lines)
 
 }
 @Composable
-fun Personajes(personaje: PersonajeTarjeta){
-    Column{
-        Personaje(personaje.title,
+fun Personajes(personaje: PersonajeTarjeta) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .clickable {
+                expanded = !expanded
+            }
+    ) {
+        Personaje(
+            personaje.title,
             MaterialTheme.colorScheme.primary,
-            MaterialTheme.typography.headlineMedium)
-
-        Personaje(personaje.body,
+            MaterialTheme.typography.headlineMedium
+        )
+        Personaje(
+            personaje.body,
             MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.typography.bodyLarge)
+            MaterialTheme.typography.bodyLarge,
+            if (expanded) Int.MAX_VALUE else 1
+        )
     }
-
-
 }
 
 @Preview
